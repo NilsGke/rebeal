@@ -14,7 +14,7 @@ export default function App() {
 
   return (
     <>
-      <header className="fixed mt-2 w-full max-w-3xl top-0 p-3 flex flex-row justify-between items-center">
+      <header className="sticky w-full max-w-3xl top-2 p-3 flex flex-row justify-between items-center">
         <Link href="/app/friends">
           <PeopleIcon />
         </Link>

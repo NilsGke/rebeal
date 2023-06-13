@@ -2,7 +2,7 @@
 
 import "./globals.css";
 import { Inter } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
+import SessionContext from "./app/SessionContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +23,7 @@ export default function RootLayout({
           inter.className + " flex flex-row justify-center items-center"
         }
       >
-        <SessionProvider>{children}</SessionProvider>
+        <SessionContext>{children}</SessionContext>
       </body>
     </html>
   );
