@@ -51,14 +51,17 @@ const Page = async () => {
 
         <Block title="FEATURES">
           <Link href={""}>Memories</Link>
+          <HR />
           <Link href={""}>Music</Link>
         </Block>
         <Block title="SETTINGS">
           <Link href={""}>Notifications</Link>
+          <HR />
           <Link href={""}>Other</Link>
         </Block>
         <Block title="ABOUT">
           <Link href={process.env.NEXTAUTH_URL || "/"}>Home Page</Link>
+          <HR />
           <Link target="_blank" href="https://github.com/NilsGke/rebeal">
             Github
           </Link>
@@ -71,6 +74,8 @@ const Page = async () => {
   );
 };
 
+const HR = () => <hr className="border-zinc-700" />;
+
 const Block: React.FC<{ title: string; children: React.ReactNode }> = ({
   title,
   children,
@@ -78,7 +83,7 @@ const Block: React.FC<{ title: string; children: React.ReactNode }> = ({
   return (
     <>
       <h2 className="text-xs mt-2 font-bold">{title}</h2>
-      <div className="p-3 rounded-xl bg-zinc-900 flex flex-col gap-4 flex-nowrap">
+      <div className="p-3 rounded-xl bg-zinc-900 flex flex-col gap-3 flex-nowrap">
         {children}
       </div>
     </>
