@@ -1,6 +1,5 @@
 "use client";
 
-import { getBackCamera, getFrontCamera } from "@/helpers/cameraIdStore";
 import { useRouter } from "next/navigation";
 import { useRef, useCallback, useState, useEffect } from "react";
 import Webcam from "react-webcam";
@@ -38,74 +37,51 @@ const Camera = ({
 }: {
   setImages: (images: { main: string; selfie: string }) => void;
 }) => {
-  const [frontCamera, setFrontCamera] = useState<string | null>(null);
-  const [backCamera, setBackCamera] = useState<string | null>(null);
-  const router = useRouter();
+  const [cam, setCam] = useState<"user" | "environment">("environment");
 
-  const [camsLoaded, setCamsLoaded] = useState(false);
+  const camRef = useRef<Webcam>(null);
 
-  useEffect(() => {
-    const frontCamera = getFrontCamera();
-    const backCamera = getBackCamera();
-    setFrontCamera(frontCamera);
-    setBackCamera(backCamera);
-    setCamsLoaded(true);
-  }, []);
+  const firstImage = useRef<string | null>(null);
+  const secondImage = useRef<string | null>(null);
 
-  const [cam, setCam] = useState<"front" | "back">("back");
+  const capture = () => {
+    if (camRef.current === null) throw new Error("webcam ref is null");
 
-  const frontCamRef = useRef<Webcam>(null);
-  const backCamRef = useRef<Webcam>(null);
-  const capture = useCallback(() => {
-    if (frontCamRef.current === null) throw new Error("webcam ref is null");
-    if (backCamRef.current === null) throw new Error("webcam ref is null");
+    const image = camRef.current.getScreenshot();
+    if (image === null) throw new Error("could not capture screenshot");
 
-    const frontImage = frontCamRef.current.getScreenshot();
-    const backImage = backCamRef.current.getScreenshot();
+    firstImage.current = image;
 
-    if (frontImage === null) throw new Error("could not capture screenshot");
-    if (backImage === null) throw new Error("could not capture screenshot");
+    setCam((prev) => (prev === "user" ? "environment" : "user"));
 
-    setImages({
-      main: backImage,
-      selfie: frontImage,
-    });
-  }, [setImages]);
+    // capture second
+    setTimeout(() => {
+      if (camRef.current === null) throw new Error("webcam ref is null");
+      if (firstImage.current === null)
+        throw new Error("could not take first image");
+      const otherImage = camRef.current.getScreenshot();
+      if (otherImage === null) throw new Error("could not take second picture");
+      secondImage.current = otherImage;
 
-  if (frontCamera === null || backCamera === null) {
-    if (camsLoaded) router.push("app/selectCams?callback=app/upload");
-    return "";
-  }
+      setImages({
+        main: cam === "user" ? otherImage : firstImage.current,
+        selfie: cam === "environment" ? otherImage : firstImage.current,
+      });
+    }, 1000);
+  };
 
   return (
     <div>
       <div>
         <Webcam
-          ref={frontCamRef}
+          ref={camRef}
           screenshotFormat="image/jpeg"
           height={1000}
           width={1000}
-          className={
-            "absolute rounded  " + (cam === "front" ? "" : " invisible")
-          }
+          className="absolute rounded  "
           audio={false}
           mirrored
-          videoConstraints={{ deviceId: frontCamera, facingMode: "user" }}
-        />
-        <Webcam
-          ref={backCamRef}
-          screenshotFormat="image/jpeg"
-          height={1000}
-          width={1000}
-          className={
-            "absolute rounded  " + (cam === "back" ? "" : " invisible")
-          }
-          audio={false}
-          mirrored
-          videoConstraints={{
-            deviceId: backCamera,
-            facingMode: "environment",
-          }}
+          videoConstraints={{ facingMode: cam }}
         />
       </div>
       <button
@@ -114,7 +90,9 @@ const Camera = ({
       ></button>
       <button
         className="absolute bottom-10 right-10 invert "
-        onClick={() => setCam((prev) => (prev === "back" ? "front" : "back"))}
+        onClick={() =>
+          setCam((prev) => (prev === "environment" ? "user" : "environment"))
+        }
       >
         <Image className="h-12 w-12" src={RotateIcon} alt="rotate icon" />
       </button>
