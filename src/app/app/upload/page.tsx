@@ -42,7 +42,6 @@ const Camera = ({
   const camRef = useRef<Webcam>(null);
 
   const firstImage = useRef<string | null>(null);
-  const secondImage = useRef<string | null>(null);
 
   const capture = () => {
     if (camRef.current === null) throw new Error("webcam ref is null");
@@ -54,20 +53,44 @@ const Camera = ({
 
     setCam((prev) => (prev === "user" ? "environment" : "user"));
 
+    const wait = (t: number) => new Promise((r) => setTimeout(r, t));
+
     // capture second
-    setTimeout(() => {
+    setTimeout(async () => {
       if (camRef.current === null) throw new Error("webcam ref is null");
       if (firstImage.current === null)
         throw new Error("could not take first image");
-      const otherImage = camRef.current.getScreenshot();
-      if (otherImage === null) throw new Error("could not take second picture");
-      secondImage.current = otherImage;
+
+      let otherImage = camRef.current.getScreenshot();
+
+      if (otherImage === null) {
+        await wait(700);
+        try {
+          otherImage = getPicture();
+        } catch (error) {
+          await wait(1000);
+          try {
+            otherImage = getPicture();
+          } catch (error) {
+            throw new Error("could not take second picture");
+          }
+        }
+      }
 
       setImages({
         main: cam === "user" ? otherImage : firstImage.current,
         selfie: cam === "environment" ? otherImage : firstImage.current,
       });
     }, 1000);
+  };
+
+  const getPicture = () => {
+    if (camRef.current === null) throw new Error("webcam ref is null");
+
+    const image = camRef.current.getScreenshot();
+    if (image === null) throw new Error("could not capture screenshot");
+
+    return image;
   };
 
   return (
