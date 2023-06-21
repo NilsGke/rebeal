@@ -7,8 +7,6 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 export default function Home() {
   const { data: session } = useSession();
 
-  console.log(session);
-
   return (
     <>
       <header className="fixed w-screen p-2 flex justify-center top-0">
