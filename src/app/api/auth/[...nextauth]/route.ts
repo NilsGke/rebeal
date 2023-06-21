@@ -1,10 +1,22 @@
 import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
-import { FirestoreAdapter } from "@next-auth/firebase-adapter";
-import { firestore } from "@/firebase/firestore/config";
+import { FirestoreAdapter, initFirestore } from "@next-auth/firebase-adapter";
+import { AuthOptions } from "next-auth";
+import { cert } from "firebase-admin/app";
+import getTags from "@/helpers/generateTags";
 
-export const authOptions = {
+const firestore = initFirestore({
+  credential: cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY
+      ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+      : undefined,
+  }),
+});
+
+export const authOptions: AuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID || "",
@@ -17,6 +29,35 @@ export const authOptions = {
   ],
   adapter: FirestoreAdapter(firestore),
   secret: process.env.JWT_SECRET,
+  callbacks: {
+    jwt: async ({ token, user, account, profile, trigger }) => {
+      if (user) {
+        token.uid = user.id;
+      }
+      if (trigger === "signUp" && user.name) {
+        const tags = getTags(user.name.toLowerCase());
+        console.log(tags);
+        firestore.doc(`users/${user.id}`).set(
+          {
+            tags,
+          },
+          {
+            merge: true,
+          }
+        );
+      }
+      return token;
+    },
+    session: async ({ session, token }) => {
+      if (session.user) {
+        session.user.id = token.uid as string; // TEMPORARY
+      }
+      return session;
+    },
+  },
+  session: {
+    strategy: "jwt",
+  },
 };
 
 const handler = NextAuth(authOptions);
