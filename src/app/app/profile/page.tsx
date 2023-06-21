@@ -1,33 +1,24 @@
 import Link from "next/link";
-import BackArrow from "../../../../public/assets/backArrow.svg";
-import VerticalDots from "../../../../public/assets/verticalDots.svg";
-import LockIcon from "../../../../public/assets/lock.svg";
+import VerticalDots from "@/../public/assets/verticalDots.svg";
+import LockIcon from "@/../public/assets/lock.svg";
 import Image from "next/image";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import getDicebearImage from "@/helpers/dicebear";
 import ShareButton from "@/components/ShareButton";
-import { AuthRequiredError } from "@/helpers/authRequiredException";
+import serverAuth from "@/helpers/serverComponentAuth";
+import BackButton from "@/components/BackButton";
 
 export default async function Page() {
-  const session = await getServerSession(authOptions);
-  if (session === null || session.user === undefined)
-    throw new AuthRequiredError();
+  const session = await serverAuth();
 
   return (
     <>
       <header className="relative w-full h-14 max-w-3xl p-3 pt-5 flex flex-row justify-between items-center z-10">
         <div className="flex flex-row justify-center items-center gap-3">
-          <Link href="/app" className="flex justify-center items-center">
-            <Image
-              className="invert h-5 w-5"
-              src={BackArrow}
-              alt="back arrow"
-            />
-          </Link>
-          <span className="flex items-center justify-center">
-            {session.user.name}
-          </span>
+          <BackButton className="flex gap-3 justify-center items-center">
+            <span className="flex items-center justify-center">
+              {session.user.name}
+            </span>
+          </BackButton>
         </div>
         <Link href="/app/profile/settings">
           <Image
@@ -54,7 +45,7 @@ export default async function Page() {
 
         <div className="relative p-3 flex justify-between items-center">
           <h1 className="text-4xl ">{session.user.name}</h1>
-          <ShareButton url={`users/${session.user.name}`} />
+          <ShareButton url={`/app/users/${session.user.id}`} />
         </div>
 
         <section className="p-3">
