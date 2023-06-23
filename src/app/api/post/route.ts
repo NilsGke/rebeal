@@ -1,8 +1,10 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { NextRequest, NextResponse } from "next/server";
-import { postRebeal } from "@/firebase/firestore/rebeals";
 import { z } from "zod";
+import admin from "@/firebase/config";
+import { getStorage } from "firebase-admin/storage";
+import { Timestamp, getFirestore } from "firebase-admin/firestore";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -11,55 +13,61 @@ export async function POST(request: NextRequest) {
   if (session.user === undefined)
     return NextResponse.json({ message: "no user found for your session" });
 
-  const formData = await request.formData();
+  const body = await request.json();
 
-  const main = formData.get("mainImage");
-  const selfie = formData.get("selfie");
-  const _postedAt = formData.get("postedAt");
+  const environmentURL = z
+    .string()
+    .startsWith(
+      `https://firebasestorage.googleapis.com/v0/b/${process.env.FIREBASE_STORAGE_BUCKET}/o/users`
+    )
+    .safeParse(body.environmentURL);
+  const selfieURL = z
+    .string()
+    .startsWith(
+      `https://firebasestorage.googleapis.com/v0/b/${process.env.FIREBASE_STORAGE_BUCKET}/o/users`
+    )
+    .safeParse(body.selfieURL);
+  const postedAt = z
+    .number()
+    .min(1687541598947)
+    .max(Date.now())
+    .safeParse(body.postedAt);
 
-  // validate
-  if (main === null)
+  //#region validate
+  if (!environmentURL.success)
     return NextResponse.json({
-      message: "formdata main image returned null",
+      message: "environment image url invalid",
     });
-  if (selfie === null)
+  if (!selfieURL.success)
     return NextResponse.json({
-      message: "formdata selfie image returned null",
+      message: "selfie image url invalid",
     });
-  if (_postedAt === null)
+  if (!postedAt.success)
     return NextResponse.json({
-      message: "formdata postedAt returned null",
-    });
-
-  if (typeof main === "string")
-    return NextResponse.json({
-      message: "formdata mainImage is string",
-    });
-  if (typeof selfie === "string")
-    return NextResponse.json({
-      message: "formdata selfie is string",
-    });
-  if (typeof _postedAt !== "string")
-    return NextResponse.json({
-      message: "formdatat postedAt is not a string",
+      message: "postedAt timestamp invalid",
     });
 
-  const postedAt = z.number().min(1687096843463).parse(parseInt(_postedAt));
+  //#endregion
 
+  const firestore = getFirestore();
+  const doc = firestore.collection("rebeals").doc();
   let documentId: string;
   try {
-    documentId = await postRebeal({
-      mainImage: main,
-      selfie: selfie,
-      postedAt: postedAt,
-      userId: session.user.id,
+    doc.create({
+      images: {
+        environment: environmentURL.data,
+        selfie: selfieURL.data,
+      },
+      postedAt: new Timestamp(Math.round(postedAt.data / 1000), 0),
+      user: firestore.collection("users").doc(session.user.id),
     });
   } catch (error) {
+    console.error(error);
     return NextResponse.json({
       message: "failed uploading rebeal",
       error,
     });
   }
 
-  return NextResponse.json({ success: documentId });
+  return NextResponse.json({ success: "documentId" });
 }
