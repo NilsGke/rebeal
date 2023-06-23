@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  applicationName: "BeReal.",
+  applicationName: "ReBeal.",
   appleWebApp: true,
   description: 'a clone of the app "BeReal."',
   formatDetection: {
