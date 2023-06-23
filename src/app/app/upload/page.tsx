@@ -1,78 +1,128 @@
 "use client";
 import { useRef, useState } from "react";
 import Webcam from "react-webcam";
-
-import RotateIcon from "../../../../public/assets/rotate.svg";
+import RotateIcon from "@/../public/assets/rotate.svg";
 import Image from "next/image";
+import Link from "next/link";
+import { signIn, useSession } from "next-auth/react";
+import uploadImages from "@/firebase/client/uploadReBeal";
 import { base64ToFile } from "@/helpers/base64ToFile";
+import toast from "react-simple-toasts";
+import { usePathname, useRouter } from "next/navigation";
+import PaperPlaneIcon from "@/../public/assets/paperPlane.svg";
+import LoadingCircle from "@/components/LoadingCircle";
 
 const Page: React.FunctionComponent = () => {
+  const session = useSession();
+
   const [images, setImages] = useState<null | {
-    main: string;
+    environment: string;
     selfie: string;
   }>(null);
 
+  const [uploading, setUploading] = useState(false);
+
+  const pathname = usePathname();
+  const router = useRouter();
+
   const post = async () => {
     if (images === null) return;
+    if (session === null || session.data?.user.id === undefined)
+      return toast("please log in", {
+        clickable: true,
+        onClick: () =>
+          signIn(undefined, {
+            callbackUrl: pathname,
+          }),
+      });
 
-    const main = base64ToFile(images.main, "mainImage.webp");
-    const selfie = base64ToFile(images.selfie, "selfie.webp");
+    const timestamp = Date.now(); // unsafe (but irrelevant for this project)
 
-    let formData = new FormData();
+    setUploading(true);
 
-    formData.append("mainImage", main);
-    formData.append("selfie", selfie);
-    formData.set("postedAt", Date.now().toString());
-    fetch("/api/post", { method: "POST", body: formData })
+    const [environmentURL, selfieURL] = await uploadImages(
+      {
+        environment: base64ToFile(images.environment, "environment.webp"),
+        selfie: base64ToFile(images.selfie, "selfie.webp"),
+      },
+      session.data.user.id
+    );
+
+    console.log(environmentURL, selfieURL);
+
+    fetch("/api/post", {
+      method: "POST",
+      body: JSON.stringify({
+        environmentURL,
+        selfieURL,
+        postedAt: timestamp,
+      }),
+    })
       .then((res) => res.json())
-      .then(console.log);
-
-    // fetch("/api/post", {
-    //   method: "POST",
-    //   headers: {
-    //     Accept: "application/json",
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     mainImage: await main.arrayBuffer(),
-    //     selfie: await selfie.arrayBuffer(),
-    //     postedAt: Date.now(),
-    //   }),
-    // })
-    //   .then((res) => res.json())
-    //   .then(console.log);
+      .then((res) => {
+        if (res.success) {
+          toast("posted ✅");
+          setUploading(false);
+          router.push("/app");
+        }
+      });
   };
 
   if (images === null)
     return (
       <Camera
-        setImages={(images: { main: string; selfie: string }) =>
+        setImages={(images: { environment: string; selfie: string }) =>
           setImages(images)
         }
       />
     );
 
   return (
-    <div className="">
-      <div className="relative w-full aspect-[3/4]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          className="rounded absolute top-4 left-4 h-40"
-          src={images.main}
-          alt="main image"
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="rounded" src={images.selfie} alt="selfie image" />
+    <>
+      <header className=" w-full max-w-3xl mt-2 p-3 flex flex-row justify-center items-center">
+        <Link className="absolute left-5 text-2xl" href="/app">
+          &lt;
+        </Link>
+        <h1 className="text-2xl">ReBeal.</h1>
+        <div />
+      </header>
+      <div className="flex flex-col justify-around h-[calc(100%-65px)]">
+        <div className="relative w-full aspect-[3/4]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="rounded absolute top-4 left-4 h-40"
+            src={images.environment}
+            alt="main image"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="rounded" src={images.selfie} alt="selfie image" />
+        </div>
+
+        <button
+          className="w-full text-3xl flex items-center justify-center h-full gap-3"
+          onClick={uploading ? undefined : post}
+        >
+          POST{" "}
+          {uploading ? (
+            <LoadingCircle />
+          ) : (
+            <Image
+              height={35}
+              className="invert rotate-45"
+              src={PaperPlaneIcon}
+              alt="paper plane (send icon)"
+            />
+          )}
+        </button>
       </div>
-      <button onClick={post}>post</button>
-    </div>
+    </>
   );
 };
 
 const Camera = ({
   setImages,
 }: {
-  setImages: (images: { main: string; selfie: string }) => void;
+  setImages: (images: { environment: string; selfie: string }) => void;
 }) => {
   const [cam, setCam] = useState<"user" | "environment">("environment");
 
@@ -115,7 +165,7 @@ const Camera = ({
       }
 
       setImages({
-        main: cam === "user" ? otherImage : firstImage.current,
+        environment: cam === "user" ? otherImage : firstImage.current,
         selfie: cam === "environment" ? otherImage : firstImage.current,
       });
     }, 1000);
