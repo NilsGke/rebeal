@@ -2,7 +2,8 @@
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import BackArrow from "@/../public/assets/backArrow.svg";
+import Image from "next/image";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -26,9 +27,14 @@ export default function Home() {
             <div className="">
               <Link
                 href="/app"
-                className="border rounded-lg p-3 border-gray-700 hover:bg-gray-700"
+                className="border rounded-lg p-3 border-gray-700 hover:bg-gray-700 flex items-center gap-3"
               >
-                go to App <OpenInNewIcon />
+                go to App{" "}
+                <Image
+                  src={BackArrow}
+                  className="rotate-180 invert"
+                  alt="right arrow"
+                />
               </Link>
             </div>
           )}
