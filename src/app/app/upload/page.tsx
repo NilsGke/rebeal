@@ -11,6 +11,7 @@ import toast from "react-simple-toasts";
 import { usePathname, useRouter } from "next/navigation";
 import PaperPlaneIcon from "@/../public/assets/paperPlane.svg";
 import LoadingCircle from "@/components/LoadingCircle";
+import CloseIcon from "@/../public/assets/closeIcon.svg";
 
 const Page: React.FunctionComponent = () => {
   const session = useSession();
@@ -20,7 +21,9 @@ const Page: React.FunctionComponent = () => {
     selfie: string;
   }>(null);
 
-  const [uploading, setUploading] = useState(false);
+  const [status, setStatus] = useState<
+    "idle" | "uploading" | "posted" | "failed"
+  >("idle");
 
   const pathname = usePathname();
   const router = useRouter();
@@ -38,7 +41,7 @@ const Page: React.FunctionComponent = () => {
 
     const timestamp = Date.now(); // unsafe (but irrelevant for this project)
 
-    setUploading(true);
+    setStatus("uploading");
 
     const [environmentURL, selfieURL] = await uploadImages(
       {
@@ -46,7 +49,14 @@ const Page: React.FunctionComponent = () => {
         selfie: base64ToFile(images.selfie, "selfie.webp"),
       },
       session.data.user.id
-    );
+    ).catch((error) => {
+      setStatus("failed");
+      console.error(error);
+      toast(error);
+      return [null, null];
+    });
+
+    if (environmentURL === null || selfieURL === null) return;
 
     console.log(environmentURL, selfieURL);
 
@@ -62,9 +72,14 @@ const Page: React.FunctionComponent = () => {
       .then((res) => {
         if (res.success) {
           toast("posted ✅");
-          setUploading(false);
+          setStatus("posted");
           router.push("/app");
         }
+      })
+      .catch((error) => {
+        setStatus("failed");
+        toast(error);
+        console.error(error);
       });
   };
 
@@ -84,27 +99,40 @@ const Page: React.FunctionComponent = () => {
           &lt;
         </Link>
         <h1 className="text-2xl">ReBeal.</h1>
-        <div />
+        <button
+          className="invert absolute right-5 h-7 w-7 aspect-square"
+          onClick={() => setImages(null)}
+        >
+          <Image src={CloseIcon} className="h-[80%] w-[80%]" alt="close icon" />
+        </button>
       </header>
       <div className="flex flex-col justify-around h-[calc(100%-65px)]">
         <div className="relative w-full aspect-[3/4]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            className="rounded absolute top-4 left-4 h-40"
-            src={images.environment}
+            className="rounded absolute top-4 left-4 h-44"
+            src={images.selfie}
             alt="main image"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="rounded" src={images.selfie} alt="selfie image" />
+          <img
+            className="rounded"
+            src={images.environment}
+            alt="selfie image"
+          />
         </div>
 
         <button
           className="w-full text-3xl flex items-center justify-center h-full gap-3"
-          onClick={uploading ? undefined : post}
+          onClick={
+            status === "uploading" || status === "posted" ? undefined : post
+          }
         >
           POST{" "}
-          {uploading ? (
+          {status === "uploading" ? (
             <LoadingCircle />
+          ) : status === "posted" ? (
+            "✅"
           ) : (
             <Image
               height={35}
@@ -148,10 +176,11 @@ const Camera = ({
       if (firstImage.current === null)
         throw new Error("could not take first image");
 
+      await wait(500);
       let otherImage = camRef.current.getScreenshot();
 
       if (otherImage === null) {
-        await wait(700);
+        await wait(500);
         try {
           otherImage = getPicture();
         } catch (error) {
@@ -187,10 +216,10 @@ const Camera = ({
         screenshotFormat="image/webp"
         height={1000}
         width={1000}
-        className="absolute rounded-md aspect-[3/4] w-full"
+        className="rounded-md aspect-[3/4] w-full max-w-full"
         audio={false}
         mirrored={cam === "user"}
-        videoConstraints={{ facingMode: cam, aspectRatio: 3 / 4 }}
+        videoConstraints={{ facingMode: cam, aspectRatio: 4 / 3 }}
       />
       <button
         className="absolute bottom-5 left-[calc(50%-(5rem/2))] rounded-full h-20 w-20 border-4 active:bg-white"
