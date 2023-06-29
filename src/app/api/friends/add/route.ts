@@ -4,7 +4,7 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import admin from "firebase-admin";
 import { z } from "zod";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest, res: NextResponse) {
   const session = await getServerSession(authOptions);
   if (session === null)
     return NextResponse.json({
@@ -22,6 +22,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "id is invalid" });
 
   const firestore = admin.firestore();
+
+  const existingDoc = (
+    await Promise.all([
+      firestore
+        .collection("friends")
+        .where("a", "==", firestore.doc(`users/${session.user.id}`))
+        .where("b", "==", firestore.doc(`users/${id}`))
+        .get()
+        .then((r) => r.docs),
+      firestore
+        .collection("friends")
+        .where("b", "==", firestore.doc(`users/${session.user.id}`))
+        .where("a", "==", firestore.doc(`users/${id}`))
+        .get()
+        .then((r) => r.docs),
+    ])
+  )
+    .flat()
+    .at(0);
+
+  if (existingDoc?.exists) {
+    if (existingDoc.data().pending === false)
+      return new Response("already friends", {
+        status: 400,
+      });
+    else if (existingDoc.data().a === firestore.doc(`users/${session.user.id}`))
+      return new Response("already existing request", {
+        status: 400,
+      });
+    else return new Response("existing incoming request", { status: 400 });
+  }
+
   await firestore.collection("friends").add({
     a: firestore.doc(`users/${session.user.id}`),
     b: firestore.doc(`users/${id}`),
