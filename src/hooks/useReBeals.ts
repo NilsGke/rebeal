@@ -10,10 +10,8 @@ import {
   where,
   DocumentData,
   QueryDocumentSnapshot,
-  getDocs,
   DocumentReference,
 } from "firebase/firestore";
-import { User } from "next-auth";
 import { useEffect, useRef, useState } from "react";
 
 type ReBeal = {
@@ -38,8 +36,16 @@ const useReBeals = (userId: string, friendIds: string[]) => {
   console.log({ rebeals: reBeals, newReBeals, newAvalible });
 
   const showNewReBeals = () => {
-    setRebeals((prev) => [...prev, ...newReBeals]);
-    setNewReBeals([]);
+    setNewReBeals((prevNew) => {
+      setRebeals((prev) => {
+        const reBeals = [...prev, ...prevNew];
+        return reBeals.filter(
+          (rebeal, index) =>
+            reBeals.findIndex((r) => r.id === rebeal.id) === index
+        );
+      });
+      return [];
+    });
   };
 
   const firstRender = useRef(true);
