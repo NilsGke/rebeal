@@ -1,12 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import BackArrow from "../../../../../public/assets/backArrow.svg";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { AuthRequiredError } from "@/helpers/authRequiredException";
 import getDicebearImage from "@/helpers/dicebear";
-import { signOut } from "next-auth/react";
 import LogoutButton from "./_LogoutButton";
+import BackButton from "@/components/BackButton";
 
 const Page = async () => {
   const session = await getServerSession(authOptions);
@@ -17,16 +16,7 @@ const Page = async () => {
     <div>
       <header className="rounded- relative w-full h-14 max-w-3xl p-3 pt-5 flex flex-row justify-start items-center z-10">
         <div className="flex flex-row justify-center items-center gap-3">
-          <Link
-            href="/app/profile"
-            className="flex justify-center items-center"
-          >
-            <Image
-              className="invert h-5 w-5"
-              src={BackArrow}
-              alt="back arrow"
-            />
-          </Link>
+          <BackButton />
 
           <h1 className="">Settings</h1>
         </div>
