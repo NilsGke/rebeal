@@ -5,7 +5,7 @@ import { Timestamp } from "firebase-admin/firestore";
 /**
  * generate next TimeToReBeal
  */
-export async function POST() {
+export async function GET() {
   const todayMidnight = new Date();
   todayMidnight.setHours(0, 0, 0, 0);
 
