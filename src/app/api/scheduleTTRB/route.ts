@@ -8,20 +8,17 @@ import { Timestamp } from "firebase-admin/firestore";
 export async function GET() {
   const todayMidnight = new Date();
   todayMidnight.setHours(0, 0, 0, 0);
+  const id = todayMidnight
+    .toLocaleDateString("DE-de")
+    .split(".")
+    .reverse()
+    .join("-");
 
   const firestore = admin.firestore();
 
-  const existing = await firestore
-    .collection("timeToReBeal")
-    .where(
-      "time",
-      ">=",
-      new Timestamp(Math.round(todayMidnight.getTime() / 1000), 0)
-    )
-    .get()
-    .then((snapshot) => snapshot.docs.at(0));
+  const existing = await firestore.collection("timeToReBeal").doc(id).get();
 
-  if (existing === undefined || !existing.exists)
+  if (existing !== undefined && existing.exists)
     return new Response("already existing timeToReBeal for this day", {
       status: 409,
     });
@@ -36,13 +33,7 @@ export async function GET() {
 
   const newTimeToReBeal = await firestore
     .collection("timeToReBeal")
-    .doc(
-      `${newTime.toLocaleDateString("DE-de", {
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`
-    )
+    .doc(id)
     .set({
       time: new Timestamp(Math.round(newTime.getTime() / 1000), 0),
     });
