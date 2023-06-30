@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import admin from "@/firebase/config";
-import datesAreSameDay from "@/helpers/datesAreSameDay";
 import { Timestamp } from "firebase-admin/firestore";
 
 /**
@@ -8,7 +7,7 @@ import { Timestamp } from "firebase-admin/firestore";
  */
 export async function POST() {
   const todayMidnight = new Date();
-  todayMidnight.setTime(0, 0, 0, 0);
+  todayMidnight.setHours(0, 0, 0, 0);
 
   const firestore = admin.firestore();
 
@@ -48,5 +47,7 @@ export async function POST() {
       time: new Timestamp(Math.round(newTime.getTime() / 1000), 0),
     });
 
-  return NextResponse.status(200);
+  return new Response("ok", {
+    status: 200,
+  });
 }
