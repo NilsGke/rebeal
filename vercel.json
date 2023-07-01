@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/getNextTTRB",
+      "path": "/api/scheduleTTRB",
       "schedule": "0 5 * * *"
     }
   ]
