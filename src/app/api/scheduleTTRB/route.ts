@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
 import admin from "@/firebase/config";
 import { Timestamp } from "firebase-admin/firestore";
+import { NextResponse } from "next/server";
 
 /**
  * generate next TimeToReBeal
  */
-export async function GET() {
+export async function GET(request: Request) {
   const todayMidnight = new Date();
   todayMidnight.setHours(0, 0, 0, 0);
   const id = todayMidnight
@@ -40,5 +40,6 @@ export async function GET() {
 
   return new Response("ok", {
     status: 200,
+    statusText: `requested: ${request.url}`,
   });
 }
