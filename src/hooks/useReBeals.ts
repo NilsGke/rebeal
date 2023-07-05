@@ -51,6 +51,7 @@ const useReBeals = (userId: string, friendIds: string[]) => {
   const firstRender = useRef(true);
 
   useEffect(() => {
+    if (friendIds.length === 0) return;
     const rebealQuery = query(
       collection(firestore, "rebeals"),
       where(
