@@ -36,7 +36,7 @@ export const authOptions: AuthOptions = {
       }
       if (trigger === "signUp" && user.name) {
         const tags = getTags(user.name.toLowerCase());
-        console.log(tags);
+
         firestore.doc(`users/${user.id}`).set(
           {
             tags,
