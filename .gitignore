@@ -36,3 +36,8 @@ next-env.d.ts
 
 # vscode
 .vscode
+
+# next pwa service worker builds
+**/public/workbox-*.js
+**/public/sw.js
+**/public/worker-*.js
