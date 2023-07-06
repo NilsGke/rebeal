@@ -2,6 +2,7 @@
 import { User } from "next-auth";
 import useReBeals from "@/hooks/useReBeals";
 import Image from "next/image";
+import NotificationPermissionBanner from "./app/NotificationPermission";
 
 const ReBealList = ({
   user,
@@ -10,7 +11,6 @@ const ReBealList = ({
   user: User;
   friendIds: string[];
 }) => {
-  console.log({ friendIds });
   const {
     reBeals: rebeals,
     newAvalible,
@@ -19,7 +19,9 @@ const ReBealList = ({
 
   return (
     <>
-      <div>
+      <div key="rebealList">
+        <NotificationPermissionBanner />
+
         {newAvalible ? (
           <button onClick={showNewReBeals}>load new</button>
         ) : null}
