@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import admin from "firebase-admin";
 import { z } from "zod";
+import sendNotification from "@/helpers/sendNotification";
 
 export async function POST(request: NextRequest, res: NextResponse) {
   const session = await getServerSession(authOptions);
@@ -59,6 +60,16 @@ export async function POST(request: NextRequest, res: NextResponse) {
     b: firestore.doc(`users/${id}`),
     pending: true,
   });
+
+  sendNotification(
+    {
+      title: `new friend request from ${session.user.name}`,
+      content: `${session.user.name} sent you a friend request`,
+      url: `/app/users/${session.user.id}`,
+    },
+    id
+  );
+
   return NextResponse.json({ success: true });
 }
 
