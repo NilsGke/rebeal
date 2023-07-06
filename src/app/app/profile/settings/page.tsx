@@ -14,7 +14,7 @@ const Page = async () => {
 
   return (
     <div>
-      <header className="rounded- relative w-full h-14 max-w-3xl p-3 pt-5 flex flex-row justify-start items-center z-10">
+      <header className="relative w-full h-14 max-w-3xl p-3 pt-5 flex flex-row justify-start items-center z-10">
         <div className="flex flex-row justify-center items-center gap-3">
           <BackButton />
 
@@ -45,7 +45,9 @@ const Page = async () => {
           <Link href={""}>Music</Link>
         </Block>
         <Block title="SETTINGS">
-          <Link href={""}>Notifications</Link>
+          <Link href={"/app/profile/settings/notifications"}>
+            Notifications
+          </Link>
           <HR />
           <Link href={""}>Other</Link>
         </Block>
