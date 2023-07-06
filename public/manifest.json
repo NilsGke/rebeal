@@ -2,6 +2,7 @@
   "theme_color": "#000000",
   "background_color": "#000000",
   "display": "fullscreen",
+  "orientation": "portrait",
   "scope": "/app",
   "start_url": "/app",
   "name": "ReBeal.",
