@@ -39,5 +39,8 @@ next-env.d.ts
 
 # next pwa service worker builds
 **/public/workbox-*.js
+**/public/workbox-*.js.map
 **/public/sw.js
+**/public/sw.js.map
 **/public/worker-*.js
+**/public/worker-*.js.map
