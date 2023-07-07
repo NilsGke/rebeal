@@ -7,20 +7,31 @@ import toast from "react-simple-toasts";
 
 export default function NotificationPermissionBanner() {
   const [permission, setPermission] = useState<
-    NotificationPermission | "noSupport" | "loading"
-  >(
-    typeof Notification === "undefined" ? "noSupport" : Notification.permission
-  );
+    NotificationPermission | "noSupport" | "loading" | undefined
+  >(undefined);
   const [workerState, setWorkerState] = useState<
     "notInstalled" | "installed" | "installing" | "noSupport" | undefined
-  >(typeof navigator === "undefined" ? "noSupport" : undefined);
+  >(undefined);
+
+  // set initial states
+  useEffect(() => {
+    setPermission(
+      typeof Notification === "undefined"
+        ? "noSupport"
+        : Notification.permission
+    );
+  }, []);
 
   // check for existing worker
   useEffect(() => {
+    const workerState =
+      typeof navigator === "undefined" ? "noSupport" : undefined;
+    setWorkerState(workerState);
+
     if (workerState === "noSupport") return;
     if (workerState === undefined)
       navigator.serviceWorker
-        .getRegistration("/app/")
+        .getRegistration("/app")
         .then((registration) =>
           setWorkerState(
             registration === undefined ? "notInstalled" : "installed"
@@ -43,6 +54,17 @@ export default function NotificationPermissionBanner() {
 
   const installServiceWorker = async () => {
     setWorkerState("installing");
+
+    // uninstall service worker if somehow installed
+    if (typeof navigator !== "undefined")
+      await navigator.serviceWorker
+        .getRegistration("/app")
+        .then((registration) => registration?.unregister())
+        .catch((error) => {
+          console.error(error);
+          setWorkerState("notInstalled");
+        });
+
     await registerServiceWorker()
       .then(() => {
         toast("✅ Notifications enabled!");
