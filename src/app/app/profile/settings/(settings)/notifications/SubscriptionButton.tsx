@@ -31,7 +31,7 @@ export default function SubscriptionButton({
     setState(SubscriptionState.loading);
 
     await navigator.serviceWorker
-      .getRegistration("/app/")
+      .getRegistration("/app")
       .then(async (registration) => {
         if (registration === undefined) await registerServiceWorker();
         else

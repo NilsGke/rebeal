@@ -14,7 +14,7 @@ export default async function registerServiceWorker() {
 
   await navigator.serviceWorker
     .register("/sw.js", {
-      scope: "/app/",
+      scope: "/app",
     })
     .then(
       (registration) =>
