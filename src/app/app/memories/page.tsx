@@ -1,4 +1,4 @@
-import { ServerReBeal, rebealConverter } from "@/app/types";
+import { ReBeal, rebealConverter } from "@/app/types";
 import BackButton from "@/components/BackButton";
 import admin from "@/firebase/config";
 import serverAuth from "@/helpers/serverComponentAuth";
@@ -7,7 +7,7 @@ import Link from "next/link";
 type Month = {
   year: number;
   month: number;
-  rebeals: ServerReBeal[];
+  rebeals: ReBeal[];
 };
 
 export default async function Memories() {
@@ -78,7 +78,7 @@ const Month = ({ month }: { month: Month }) => {
 
   const firstDay = date.getDay();
 
-  const entries: (ServerReBeal | number | { placeholder: true })[] = [
+  const entries: (ReBeal | number | { placeholder: true })[] = [
     ...Array.from(Array(firstDay)).map(() => ({
       placeholder: true as const,
     })),
