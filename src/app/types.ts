@@ -5,11 +5,6 @@ import {
   QueryDocumentSnapshot as AdminQueryDocumentSnapshot,
   FirestoreDataConverter,
 } from "firebase-admin/firestore";
-import {
-  DocumentReference as ClientDocumentReference,
-  Timestamp as ClientTimestamp,
-  QueryDocumentSnapshot,
-} from "firebase/firestore";
 import { User } from "next-auth";
 
 export type ReBeal = {
