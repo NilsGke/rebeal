@@ -1,4 +1,4 @@
-import { ServerReBeal, commentConverter, rebealConverter } from "@/app/types";
+import { rebealConverter } from "@/app/types";
 import admin from "../config";
 import getUsers from "./getUsers";
 
