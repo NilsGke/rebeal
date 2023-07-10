@@ -12,6 +12,7 @@ import { usePathname, useRouter } from "next/navigation";
 import PaperPlaneIcon from "@/../public/assets/paperPlane.svg";
 import LoadingCircle from "@/components/LoadingCircle";
 import CloseIcon from "@/../public/assets/closeIcon.svg";
+import ReBealImageViewer from "@/components/RebealImageViewer";
 
 const Page: React.FunctionComponent = () => {
   const session = useSession();
@@ -108,18 +109,7 @@ const Page: React.FunctionComponent = () => {
       </header>
       <div className="flex flex-col justify-around h-[calc(100%-65px)]">
         <div className="relative w-full aspect-[3/4]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className="rounded absolute top-4 left-4 h-44"
-            src={images.selfie}
-            alt="main image"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className="rounded"
-            src={images.environment}
-            alt="selfie image"
-          />
+          <ReBealImageViewer images={images} />
         </div>
 
         <button
