@@ -12,6 +12,8 @@ import DropDown from "@/components/DropDown";
 import ShareButton from "@/components/ShareButton";
 import ProfileIcon from "@/../public/assets/profile.svg";
 import ReportIcon from "@/../public/assets/report.svg";
+import NotificationPermissionBanner from "./NotificationPermission";
+import RefreshBanner from "./RefreshBanner";
 
 export default async function App() {
   const session = await serverAuth();
@@ -43,6 +45,10 @@ export default async function App() {
           )}
         </Link>
       </header>
+
+      <NotificationPermissionBanner />
+
+      <RefreshBanner initialCount={reBeals.length} />
 
       <main className="flex flex-col gap-5">
         {reBeals.map((reBeal) => (
