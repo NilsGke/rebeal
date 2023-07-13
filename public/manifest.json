@@ -3,7 +3,7 @@
   "background_color": "#000000",
   "display": "fullscreen",
   "orientation": "portrait",
-  "scope": "/app",
+  "scope": "/",
   "start_url": "/app",
   "name": "ReBeal.",
   "short_name": "ReBeal.",
