@@ -14,6 +14,7 @@ import ProfileIcon from "@/../public/assets/profile.svg";
 import ReportIcon from "@/../public/assets/report.svg";
 import NotificationPermissionBanner from "./NotificationPermission";
 import RefreshBanner from "./RefreshBanner";
+import InstallPrompt from "./InstallPrompt";
 
 export default async function App() {
   const session = await serverAuth();
@@ -47,6 +48,8 @@ export default async function App() {
       </header>
 
       <NotificationPermissionBanner />
+
+      <InstallPrompt />
 
       <RefreshBanner initialCount={reBeals.length} />
 
