@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     .toLocaleDateString("DE-de")
     .split(".")
     .reverse()
+    .map((d) => (d.length == 1 ? "0" + d : d))
     .join("-");
 
   const firestore = admin.firestore();
@@ -31,11 +32,12 @@ export async function GET(request: Request) {
   newTime.setHours(hours);
   newTime.setMinutes(minutes);
 
-  const newTimeToReBeal = await firestore
+  await firestore
     .collection("timeToReBeal")
     .doc(id)
     .set({
       time: new Timestamp(Math.round(newTime.getTime() / 1000), 0),
+      announced: false,
     });
 
   return new Response("ok", {
