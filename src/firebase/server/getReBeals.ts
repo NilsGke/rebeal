@@ -5,6 +5,8 @@ import getUsers from "./getUsers";
 const firestore = admin.firestore();
 
 export default async function getReBeals(userIds: string[]) {
+  if (userIds.length === 0) return [];
+
   const userDocs = userIds.map((id) => firestore.doc(`users/${id}`));
 
   const rebeals = (
