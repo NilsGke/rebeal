@@ -1,4 +1,6 @@
-## TODO: before production
+# ReBeal
 
-- [ ] use firestore in prod mode
-- [ ] google redirect uri from localhost to prod server
+## How are daily notifications sent?
+
+I setup a cron job on my raspberry pi to ping the `api/checkTTRB` route every minute. This could be replaced with a vercel cron job, but the free plan only offers a cron job to run once a day. This is also what the `CUSTOM_COMMUNICATION_TOKEN`-environment variable is for.
+The request requires this token to be as a url param (`.../?token="..."`)
