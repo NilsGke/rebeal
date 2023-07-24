@@ -1,6 +1,7 @@
 import subscribeUserToPush, {
   sendSubscriptionToBackEnd,
 } from "@/worker/subscribe";
+import generateSubscriptionName from "./generateSubscriptionName";
 
 export default async function registerServiceWorker() {
   // if (process.env.NODE_ENV === "development") return;
@@ -9,8 +10,6 @@ export default async function registerServiceWorker() {
     throw new Error(
       "your browser does not support service workers\nNotifications will not work!\nplease try a different browsers"
     );
-
-  console.log("\x1b[32mservice worker initiator script");
 
   await navigator.serviceWorker
     .register("/sw.js", {
@@ -40,13 +39,10 @@ export default async function registerServiceWorker() {
           serviceWorker.addEventListener("statechange", (e) => {
             if (e.target === null) return;
             if ((e.target as any).state == "activated") {
-              // use pushManger for subscribing here.
-              console.log(
-                "Just now activated. now we can subscribe for push notification"
-              );
+              const name = generateSubscriptionName();
               subscribeUserToPush(registration)
                 .then((subscription) =>
-                  sendSubscriptionToBackEnd(subscription)
+                  sendSubscriptionToBackEnd(subscription, name)
                     .then(() => resolve())
                     .catch((err) => {
                       console.error(err);

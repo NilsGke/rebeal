@@ -9,6 +9,7 @@ const schema = z.object({
     p256dh: z.string(),
     auth: z.string(),
   }),
+  name: z.string(),
 });
 
 export async function POST(request: Request) {
@@ -27,6 +28,8 @@ export async function POST(request: Request) {
   const doc = await firestore.collection("notification-subscriptions").add({
     user: firestore.doc(`users/${session.user.id}`),
     data: JSON.stringify(data.data),
+    endpoint: data.data.endpoint,
+    name: data.data.name,
   });
 
   return NextResponse.json({

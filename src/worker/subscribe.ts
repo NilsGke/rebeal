@@ -1,3 +1,10 @@
+import admin from "@/firebase/config";
+import {
+  FirestoreDataConverter,
+  QueryDocumentSnapshot,
+} from "firebase-admin/firestore";
+import { User } from "next-auth";
+
 export default async function subscribeUserToPush(
   registration: ServiceWorkerRegistration
 ) {
@@ -40,14 +47,32 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+export type DbNotificationSubscription = {
+  data: string;
+  endpoint: string;
+  name: string;
+  user: admin.firestore.DocumentReference<User>;
+};
+
 export async function sendSubscriptionToBackEnd(
-  pushSubscription: PushSubscription
+  pushSubscription: PushSubscription,
+  subscriptionName: string
 ) {
   return fetch("/api/notifications/subscribe", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(pushSubscription),
+    body: JSON.stringify({
+      ...pushSubscription.toJSON(),
+      name: subscriptionName,
+    }),
   });
 }
+
+export const notificationSubscriptionConveriter: FirestoreDataConverter<DbNotificationSubscription> =
+  {
+    toFirestore: (sub: DbNotificationSubscription) => sub,
+    fromFirestore: (doc: QueryDocumentSnapshot<DbNotificationSubscription>) =>
+      doc.data(),
+  };
