@@ -1,3 +1,5 @@
+import { NotificationData } from "@/helpers/sendNotification";
+
 declare let self: ServiceWorkerGlobalScope;
 
 // To disable all workbox logging during development, you can set self.__WB_DISABLE_DEV_LOGS to true
@@ -20,17 +22,21 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  const data = JSON.parse(event?.data.text() || "{}");
+  const data = JSON.parse(event?.data.text() || "{}") as NotificationData;
   event?.waitUntil(
     self.registration.showNotification(data.title, {
-      body: data.message,
+      body: data.content,
       icon: "/logo/icon-384x384.png",
+      data: {
+        url: data.url,
+      },
     })
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event?.notification.close();
+  const url: string | undefined = event?.notification.data.url;
   event?.waitUntil(
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
@@ -42,9 +48,9 @@ self.addEventListener("notificationclick", (event) => {
               client = clientList[i];
             }
           }
-          return client.focus();
+          // do something with `client`
         }
-        return self.clients.openWindow("/");
+        return self.clients.openWindow(url || "/app");
       })
   );
 });
