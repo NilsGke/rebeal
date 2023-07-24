@@ -11,8 +11,14 @@ const schema = z.object({
   }),
 });
 
+export type NotificationData = {
+  title: string;
+  content: string;
+  url?: string;
+};
+
 export default async function sendNotification(
-  content: { title: string; content: string; url?: string },
+  content: NotificationData,
   to: User["id"]
 ) {
   const firestore = admin.firestore();
