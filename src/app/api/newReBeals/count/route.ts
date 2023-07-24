@@ -7,6 +7,8 @@ export async function GET() {
   const session = await serverAuth();
   const friendIds = await getFriends(session.user.id);
 
+  if (friendIds.length === 0) return NextResponse.json({ count: 0 });
+
   const firestore = admin.firestore();
 
   const snapshot = await firestore
