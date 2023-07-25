@@ -79,7 +79,7 @@ async function announce() {
         {
           title: "⚠️It's time to ReBeal!⚠️",
           content: "You got two minutes to take a photo, be quick!",
-          url: "/app/post",
+          url: "/app/upload",
         },
         id
       )
