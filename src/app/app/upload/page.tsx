@@ -13,6 +13,7 @@ import PaperPlaneIcon from "@/../public/assets/paperPlane.svg";
 import LoadingCircle from "@/components/LoadingCircle";
 import CloseIcon from "@/../public/assets/closeIcon.svg";
 import ReBealImageViewer from "@/components/RebealImageViewer";
+import BackButton from "@/../public/assets/backArrow.svg";
 
 const Page: React.FunctionComponent = () => {
   const session = useSession();
@@ -84,55 +85,65 @@ const Page: React.FunctionComponent = () => {
       });
   };
 
-  if (images === null)
-    return (
-      <Camera
-        setImages={(images: { environment: string; selfie: string }) =>
-          setImages(images)
-        }
-      />
-    );
-
   return (
     <>
-      <header className=" w-full max-w-3xl mt-2 p-3 flex flex-row justify-center items-center">
-        <Link className="absolute left-5 text-2xl" href="/app">
-          &lt;
-        </Link>
-        <h1 className="text-2xl">ReBeal.</h1>
-        <button
-          className="invert absolute right-5 h-7 w-7 aspect-square"
-          onClick={() => setImages(null)}
-        >
-          <Image src={CloseIcon} className="h-[80%] w-[80%]" alt="close icon" />
-        </button>
-      </header>
-      <div className="flex flex-col justify-around h-[calc(100%-65px)]">
-        <div className="relative w-full aspect-[3/4]">
-          <ReBealImageViewer images={images} />
-        </div>
+      <Link href="/app" className="absolute top-6 left-5 z-10 ">
+        <Image
+          className="invert aspect-square w-6"
+          src={BackButton}
+          alt="close icon"
+        />
+      </Link>
 
-        <button
-          className="w-full text-3xl flex items-center justify-center h-full gap-3"
-          onClick={
-            status === "uploading" || status === "posted" ? undefined : post
+      {images === null ? (
+        <Camera
+          setImages={(images: { environment: string; selfie: string }) =>
+            setImages(images)
           }
-        >
-          POST{" "}
-          {status === "uploading" ? (
-            <LoadingCircle />
-          ) : status === "posted" ? (
-            "✅"
-          ) : (
-            <Image
-              height={35}
-              className="invert rotate-45"
-              src={PaperPlaneIcon}
-              alt="paper plane (send icon)"
-            />
-          )}
-        </button>
-      </div>
+        />
+      ) : (
+        <>
+          <header className=" w-full max-w-3xl mt-2 p-3 flex flex-row justify-center items-center">
+            <h1 className="text-2xl">ReBeal.</h1>
+            <button
+              className="invert absolute right-5 h-7 w-7 aspect-square"
+              onClick={() => setImages(null)}
+            >
+              <Image
+                src={CloseIcon}
+                className="h-[80%] w-[80%]"
+                alt="close icon"
+              />
+            </button>
+          </header>
+          <div className="flex flex-col justify-around h-[calc(100%-65px)]">
+            <div className="relative w-full aspect-[3/4]">
+              <ReBealImageViewer images={images} />
+            </div>
+
+            <button
+              className="w-full text-3xl flex items-center justify-center h-full gap-3"
+              onClick={
+                status === "uploading" || status === "posted" ? undefined : post
+              }
+            >
+              POST{" "}
+              {status === "uploading" ? (
+                <LoadingCircle />
+              ) : status === "posted" ? (
+                "✅"
+              ) : (
+                <Image
+                  height={35}
+                  className="invert rotate-45"
+                  src={PaperPlaneIcon}
+                  alt="paper plane (send icon)"
+                />
+              )}
+            </button>
+          </div>
+        </>
+      )}
     </>
   );
 };
@@ -206,7 +217,7 @@ const Camera = ({
         screenshotFormat="image/webp"
         height={1000}
         width={1000}
-        className="rounded-md aspect-[3/4] w-full max-w-full"
+        className="mt-[15%] rounded-md aspect-[3/4] w-full max-w-full"
         audio={false}
         mirrored={cam === "user"}
         videoConstraints={{ facingMode: cam, aspectRatio: 4 / 3 }}
