@@ -1,20 +1,20 @@
 import { PartialBy } from "@/helpers/tshelpers";
 import {
-  DocumentReference as AdminDocumentReference,
-  Timestamp as AdminTimestamp,
-  QueryDocumentSnapshot as AdminQueryDocumentSnapshot,
+  DocumentReference,
+  QueryDocumentSnapshot,
   FirestoreDataConverter,
+  Timestamp,
 } from "firebase-admin/firestore";
 import { User } from "next-auth";
 
 export type ReBeal = {
   id: string;
-  user: AdminDocumentReference;
+  user: DocumentReference;
   images: {
     environment: string;
     selfie: string;
   };
-  postedAt: AdminTimestamp;
+  postedAt: Timestamp;
   late?: boolean;
 };
 
@@ -33,7 +33,7 @@ export const userConverter: FirestoreDataConverter<User> = {
     };
     return user;
   },
-  fromFirestore: (snap: AdminQueryDocumentSnapshot) =>
+  fromFirestore: (snap: QueryDocumentSnapshot) =>
     ({
       ...snap.data(),
       id: snap.id,
@@ -42,8 +42,8 @@ export const userConverter: FirestoreDataConverter<User> = {
 
 export type Comment = {
   content: string;
-  user: AdminDocumentReference;
-  postedAt: AdminTimestamp;
+  user: DocumentReference;
+  postedAt: Timestamp;
   id: string;
 };
 
@@ -52,9 +52,20 @@ export const commentConverter = {
     delete data.id;
     ({ ...data, id: undefined });
   },
-  fromFirestore: (snap: AdminQueryDocumentSnapshot) =>
+  fromFirestore: (snap: QueryDocumentSnapshot) =>
     ({
       ...snap.data(),
       id: snap.id,
     } as Comment),
+};
+
+export type TTRB = {
+  announced: boolean;
+  announcedAt?: Timestamp;
+  time: Timestamp;
+};
+
+export const TTRBConverter: FirestoreDataConverter<TTRB> = {
+  toFirestore: (data: TTRB) => data,
+  fromFirestore: (data: QueryDocumentSnapshot<TTRB>) => data.data(),
 };
