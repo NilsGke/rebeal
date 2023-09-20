@@ -9,7 +9,7 @@ import { User } from "next-auth";
 
 export type ReBeal = {
   id: string;
-  user: DocumentReference;
+  user: DocumentReference<User>;
   images: {
     environment: string;
     selfie: string;
@@ -69,3 +69,53 @@ export const TTRBConverter: FirestoreDataConverter<TTRB> = {
   toFirestore: (data: TTRB) => data,
   fromFirestore: (data: QueryDocumentSnapshot<TTRB>) => data.data(),
 };
+
+// #region reaction
+export type SavedReactionUserRecord = {
+  "👍": string;
+  "😃": string;
+  "😯": string;
+  "😍": string;
+  "😂": string;
+};
+export const reactionEmojis = ["👍", "😃", "😯", "😍", "😂", "⚡"] as const;
+
+export const stringIsReactionEmoji = (
+  string: string
+): string is (typeof reactionEmojis)[number] =>
+  reactionEmojis.includes(string as (typeof reactionEmojis)[number]);
+
+export const savedReactionUserRecordConverter: FirestoreDataConverter<SavedReactionUserRecord> =
+  {
+    toFirestore: (data: SavedReactionUserRecord) => data,
+    fromFirestore: (snapshot: QueryDocumentSnapshot<SavedReactionUserRecord>) =>
+      snapshot.data(),
+  };
+
+export type Reaction = {
+  id: string;
+  user: DocumentReference<User>;
+  image: string;
+  type: "👍" | "😃" | "😯" | "😍" | "😂" | "⚡";
+};
+
+export type SavedReaction = Omit<Reaction, "type"> & {
+  type: "⚡";
+};
+
+export const reactionConverter: FirestoreDataConverter<Reaction> = {
+  toFirestore: (data: Reaction) => data,
+  fromFirestore: (snapshot: QueryDocumentSnapshot<Reaction>) => ({
+    ...snapshot.data(),
+    id: snapshot.id,
+  }),
+};
+
+export const savedReactionConverter: FirestoreDataConverter<SavedReaction> = {
+  toFirestore: (data: SavedReaction) => ({ ...data, id: undefined }),
+  fromFirestore: (snapshot: QueryDocumentSnapshot<SavedReaction>) => ({
+    ...snapshot.data(),
+    id: snapshot.id,
+  }),
+};
+// #endregion

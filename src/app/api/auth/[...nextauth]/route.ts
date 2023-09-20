@@ -45,6 +45,13 @@ export const authOptions: AuthOptions = {
             merge: true,
           }
         );
+        firestore.doc(`savedReactions/${user.id}`).set({
+          "👍": "",
+          "😃": "",
+          "😯": "",
+          "😍": "",
+          "😂": "",
+        });
       }
       return token;
     },

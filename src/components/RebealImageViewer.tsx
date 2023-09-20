@@ -1,12 +1,17 @@
 "use client";
 
 import { ReBeal } from "@/app/types";
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
+import { twMerge } from "tailwind-merge";
 
 export default function ReBealImageViewer({
   images,
+  className = "",
+  children,
 }: {
   images: ReBeal["images"];
+  className?: string;
+  children?: ReactNode;
 }) {
   const [environmentBig, setEnvironmentBig] = useState(true);
   const [dragging, setDragging] = useState(false);
@@ -197,21 +202,22 @@ export default function ReBealImageViewer({
   }, []);
 
   return (
-    <div className="relative w-full">
+    <div className={twMerge("relative aspect-[3/4]", className)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={bigImageRef}
-        className="rounded-2xl w-full max-w-screen-lg"
+        className="rounded-2xl h-full"
         src={environmentBig ? images.environment : images.selfie}
         alt="environment image"
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={smallImageRef}
-        className="rounded-xl absolute top-4 left-4 h-40 border-2 border-black"
+        className="rounded-xl absolute top-4 left-4 h-[30%] border-2 border-black"
         src={environmentBig ? images.selfie : images.environment}
         alt="selfie"
       />
+      {children}
     </div>
   );
 }
