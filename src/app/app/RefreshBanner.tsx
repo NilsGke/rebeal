@@ -13,8 +13,6 @@ export default function RefreshBanner({
 
   const router = useRouter();
 
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
   useEffect(() => {
     const check = () =>
       fetch("/api/newReBeals/count", { cache: "no-store" })
@@ -35,7 +33,6 @@ export default function RefreshBanner({
 
   return (
     <button
-      ref={buttonRef}
       onClick={reload}
       className={twMerge(
         "fixed top-16 w-44 h-9 rounded-full left-[calc(50%-11rem/2)] bg-zinc-700 z-20 transition-all",
