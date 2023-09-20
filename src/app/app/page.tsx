@@ -17,14 +17,30 @@ import RefreshBanner from "./RefreshBanner";
 import InstallPrompt from "./InstallPrompt";
 import admin from "@/firebase/config";
 import { Timestamp } from "firebase-admin/firestore";
-import { rebealConverter } from "../types";
-import { Session } from "next-auth";
+import {
+  ReBeal,
+  SavedReactionUserRecord,
+  rebealConverter,
+  savedReactionUserRecordConverter,
+} from "../types";
+import { Session, User } from "next-auth";
 import getLastTTRB from "@/firebase/server/getLastTTRB";
 import getLateness from "@/helpers/getLateness";
 import PostPromptLink from "@/components/PostPromptLink";
+import createSavedReactionRecord from "@/firebase/server/createSavedReactionsRecord";
+import ReactionButtons from "./ReactionButtons";
+import ScrollAnchor from "@/components/ScrollAnchor";
 
-export default async function App() {
+export default async function App({
+  searchParams,
+}: {
+  searchParams: {
+    scrollToReBeal?: ReBeal["id"];
+  };
+}) {
   const session = await serverAuth();
+
+  const { scrollToReBeal } = searchParams;
 
   if (!session || session.user === undefined)
     return <p>you need to log in to use this app</p>;
@@ -35,13 +51,31 @@ export default async function App() {
   todayMidnight.setHours(0, 0, 0, 0);
 
   const firestore = admin.firestore();
-  const ownReBealSnapshot = await firestore
-    .collection("rebeals")
-    .where("user", "==", firestore.doc(`users/${session.user.id}`))
-    .where("postedAt", ">=", Timestamp.fromDate(todayMidnight))
-    .limit(1)
-    .withConverter(rebealConverter)
-    .get();
+  let [ownReBealSnapshot, savedReactions] = await Promise.all([
+    firestore
+      .collection("rebeals")
+      .where("user", "==", firestore.doc(`users/${session.user.id}`))
+      .where("postedAt", ">=", Timestamp.fromDate(lastTTRB.announcedAt))
+      .limit(1)
+      .withConverter(rebealConverter)
+      .get(),
+    firestore
+      .doc(`savedReactions/${session.user.id}`)
+      .withConverter(savedReactionUserRecordConverter)
+      .get()
+      .then((snapshot) => snapshot.data()),
+  ]);
+
+  if (savedReactions === undefined) {
+    createSavedReactionRecord(session.user.id);
+    savedReactions = {
+      "👍": "",
+      "😃": "",
+      "😍": "",
+      "😯": "",
+      "😂": "",
+    };
+  }
 
   const ownReBeal = ownReBealSnapshot.docs.at(0)?.data();
 
@@ -82,19 +116,25 @@ export default async function App() {
           <div className="absolute w-full h-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              className="w-full h-full absolute blur-md brightness-20"
+              className="w-full h-full absolute blur-xl brightness-[.5]"
               src={ownReBeal.images.environment}
               alt="your last ReBeal (environment)"
             />
           </div>
 
           {/* actual image */}
-          <div className="aspect-[3/4] w-2/5 relative mt-4 ">
+          <div className="aspect-[3/4] w-1/3 relative mt-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={ownReBeal.images.environment}
               alt="your last ReBeal (environment)"
-              className="w-full rounded-md border-2 border-black"
+              className="w-full rounded-xl"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ownReBeal.images.selfie}
+              alt="your last ReBeal (selfie)"
+              className="absolute rounded-md border border-black w-[30%] top-2 left-2"
             />
           </div>
 
@@ -111,7 +151,12 @@ export default async function App() {
       <InstallPrompt />
 
       {userHasPosted ? (
-        <FriendReBeals session={session} lastTTRB={lastTTRB} />
+        <FriendReBeals
+          session={session}
+          lastTTRB={lastTTRB}
+          savedReactions={savedReactions}
+          scrollTo={scrollToReBeal}
+        />
       ) : null}
 
       {!userHasPosted && (
@@ -133,9 +178,13 @@ export default async function App() {
 async function FriendReBeals({
   session,
   lastTTRB,
+  savedReactions,
+  scrollTo,
 }: {
   session: Session;
   lastTTRB: Awaited<ReturnType<typeof getLastTTRB>>;
+  savedReactions: SavedReactionUserRecord;
+  scrollTo: ReBeal["id"] | undefined;
 }) {
   const friends = await getFriends(session.user.id);
 
@@ -159,9 +208,12 @@ async function FriendReBeals({
             .sort((a, b) => b.postedAt.toMillis() - a.postedAt.toMillis())
             .map((reBeal) => (
               <ReBeal
+                savedReactions={savedReactions}
                 key={reBeal.id}
                 rebeal={reBeal}
                 ttrb={lastTTRB.announcedAt}
+                sessionUserId={session.user.id}
+                scroll={scrollTo !== undefined && scrollTo === reBeal.id}
               />
             ))
         )}
@@ -173,13 +225,21 @@ async function FriendReBeals({
 const ReBeal = ({
   rebeal,
   ttrb,
+  savedReactions,
+  sessionUserId,
+  scroll,
 }: {
   rebeal: Awaited<ReturnType<typeof getReBeals>>[0];
   ttrb: Date;
+  savedReactions: SavedReactionUserRecord;
+  sessionUserId: User["id"];
+  scroll?: boolean;
 }) => {
   const profileURL = `/app/users/${rebeal.user.id}`;
   return (
     <div>
+      {scroll && <ScrollAnchor />}
+
       <div className="relative w-full p-2 pl-4 flex justify-between h-14 aspect-square">
         <div className="flex gap-2">
           <Link href={profileURL} className="h-18">
@@ -245,10 +305,25 @@ const ReBeal = ({
         />
       </div>
 
-      <ReBealImageViewer images={rebeal.images} />
+      <ReBealImageViewer images={rebeal.images}>
+        <ReactionButtons
+          rebealId={rebeal.id}
+          sessionUserId={sessionUserId}
+          savedReactions={savedReactions}
+          reactions={rebeal.reactions}
+          reactionsOpen={
+            scroll &&
+            !rebeal.reactions.map((r) => r.userId).includes(sessionUserId)
+          }
+        />
+      </ReBealImageViewer>
 
       <div className="p-2 pl-4">
-        <Link href={`/app/rebeals/${rebeal.id}`} className="text-zinc-400">
+        <Link
+          href={`/app/rebeals/${rebeal.id}`}
+          scroll={true}
+          className="text-zinc-400"
+        >
           {rebeal.commentsCount === 0
             ? "Leave a comment..."
             : `view ${rebeal.commentsCount} comments...`}
