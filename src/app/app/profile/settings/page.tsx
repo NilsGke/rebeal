@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -6,6 +5,7 @@ import { AuthRequiredError } from "@/helpers/authRequiredException";
 import getDicebearImage from "@/helpers/dicebear";
 import LogoutButton from "./_LogoutButton";
 import BackButton from "@/components/BackButton";
+import InstallPrompt from "../../InstallPrompt";
 
 const Page = async () => {
   const session = await getServerSession(authOptions);
@@ -23,11 +23,7 @@ const Page = async () => {
       </header>
 
       <main className="p-3 flex flex-col flex-nowrap gap-1 ">
-        <div
-          className={
-            "p-3 rounded-xl bg-zinc-900 flex flex-row justify-start items-center gap-6"
-          }
-        >
+        <div className="p-3 rounded-xl bg-zinc-900 flex flex-row justify-start items-center gap-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             className="rounded-full h-16 w-16"
@@ -38,6 +34,12 @@ const Page = async () => {
           />
           <div className="text-xl font-semibold">{session.user.name}</div>
         </div>
+
+        <InstallPrompt
+          noCancel
+          ignoreUserHidden
+          className="mt-1 p-6 rounded-xl bg-zinc-900 flex-nowrap border-none w-full"
+        />
 
         <Block title="FEATURES">
           <Link href={""}>Memories</Link>
