@@ -41,7 +41,7 @@ const Page: React.FunctionComponent = () => {
           }),
       });
 
-    const timestamp = Date.now(); // unsafe (but irrelevant for this project)
+    const timestamp = Date.now();
 
     setStatus("uploading");
 
@@ -75,7 +75,7 @@ const Page: React.FunctionComponent = () => {
         if (res.success) {
           toast("posted ✅");
           setStatus("posted");
-          router.push("/app");
+          router.push(`/app?t=${Date.now()}`);
         }
       })
       .catch((error) => {
