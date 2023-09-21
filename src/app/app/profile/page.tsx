@@ -28,8 +28,8 @@ export default async function Page() {
       ">=",
       new admin.firestore.Timestamp(Math.round(twoWeeksAgo.getSeconds()), 0)
     )
-    .orderBy("postedAt")
-    .limit(20)
+    .orderBy("postedAt", "desc")
+    .limit(14)
     .get()
     .then((snapshot) =>
       snapshot.docs.map((doc) => ({
