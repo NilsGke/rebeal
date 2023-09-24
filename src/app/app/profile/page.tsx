@@ -8,6 +8,7 @@ import serverAuth from "@/helpers/serverComponentAuth";
 import BackButton from "@/components/BackButton";
 import admin from "@/firebase/config";
 import { rebealConverter } from "@/app/types";
+import ReBealImageViewer from "@/components/RebealImageViewer";
 
 export default async function Page() {
   const session = await serverAuth();
@@ -45,7 +46,10 @@ export default async function Page() {
     <>
       <header className="relative w-full h-14 max-w-3xl p-3 pt-5 flex flex-row justify-between items-center z-10">
         <div className="flex flex-row justify-center items-center gap-3">
-          <BackButton className="flex gap-3 justify-center items-center">
+          <BackButton
+            to="/app"
+            className="flex gap-3 justify-center items-center"
+          >
             <span className="flex items-center justify-center">
               {session.user.name}
             </span>
@@ -116,23 +120,20 @@ export default async function Page() {
                   >
                     {rebeal === undefined ? null : (
                       <Link
-                        href={`app/memories/${date
-                          .toLocaleDateString("EN-us", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })
-                          .replaceAll("/", "-")}`}
+                        href={`app/memories/view?d=${date.toLocaleDateString(
+                          "en-US"
+                        )}`}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          key={index}
-                          src={rebeal.images.environment}
-                          alt={`rebeal from ${13 - index} days ago`}
+                        <ReBealImageViewer
+                          images={rebeal.images}
+                          disabled
+                          selfieClassName="border rounded"
+                          envClassName="rounded-none"
+                          padding={3}
                         />
                       </Link>
                     )}
-                    <div className="absolute">
+                    <div className="absolute pointer-events-none">
                       {date.toLocaleDateString("de-DE").split(".").at(0)}
                     </div>
                   </div>

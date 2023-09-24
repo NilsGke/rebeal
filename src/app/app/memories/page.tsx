@@ -1,8 +1,10 @@
 import { ReBeal, rebealConverter } from "@/app/types";
 import BackButton from "@/components/BackButton";
+import ReBealImageViewer from "@/components/RebealImageViewer";
 import admin from "@/firebase/config";
 import serverAuth from "@/helpers/serverComponentAuth";
 import Link from "next/link";
+import { twMerge } from "tailwind-merge";
 
 type Month = {
   year: number;
@@ -56,7 +58,10 @@ export default async function Memories() {
     <>
       <header className="relative w-full h-14 max-w-3xl p-3 pt-5 flex flex-row justify-between items-center z-10">
         <div className="flex flex-row justify-center items-center gap-3">
-          <BackButton className="flex gap-3 justify-center items-center">
+          <BackButton
+            to="/app/profile"
+            className="flex gap-3 justify-center items-center"
+          >
             <span className="flex items-center justify-center">Memories</span>
           </BackButton>
         </div>
@@ -113,28 +118,27 @@ const Month = ({ month }: { month: Month }) => {
             );
           if (isPlaceholder(entry)) return <span />;
 
+          const date = entry.postedAt.toDate();
+
           return (
             <div
               key={entry.id}
-              className={
-                "rounded aspect-[3/4] flex justify-center items-center overflow-hidden " +
-                (!entry.late ? " border" : "")
-              }
+              className={twMerge(
+                "rounded aspect-[3/4] flex justify-center items-center overflow-hidden",
+                !entry.late && "border"
+              )}
             >
               <Link
-                href={`app/memories/${date
-                  .toLocaleDateString("EN-us", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
-                  .replaceAll("/", "-")}`}
+                href={`app/memories/view?d=${date.toLocaleDateString("en-US")}`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  loading="lazy"
-                  src={entry.images.environment}
-                  alt={`your rebeal from ${date.toLocaleDateString()}`}
+                <ReBealImageViewer
+                  className=""
+                  images={entry.images}
+                  envClassName="rounded-none"
+                  selfieClassName="rounded border"
+                  padding={4}
+                  disabled
+                  lazy
                 />
               </Link>
             </div>
