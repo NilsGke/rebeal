@@ -81,17 +81,20 @@ const Month = ({ month }: { month: Month }) => {
   const monthName = date.toLocaleString("EN", { month: "long" });
   const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
-  const firstDay = date.getDay();
+  const firstDayIndex = date.getDay() - 1;
 
   const entries: (ReBeal | number | { placeholder: true })[] = [
-    ...Array.from(Array(firstDay)).map(() => ({
+    ...Array.from(Array(firstDayIndex)).map(() => ({
       placeholder: true as const,
     })),
-    ...Array.from(Array(new Date(month.year, month.month, 0).getDate())).map(
+
+    ...Array.from(
+      Array(new Date(month.year, month.month + 1, 0).getDate())
+    ).map(
       (a, index) =>
         month.rebeals.find(
           (rebeal) => rebeal.postedAt.toDate().getDay() === index + 1
-        ) || index
+        ) || index + 1
     ),
   ];
 
@@ -113,12 +116,10 @@ const Month = ({ month }: { month: Month }) => {
           if (typeof entry === "number")
             return (
               <div className="aspect-[3/4] flex justify-center items-center text-zinc-400">
-                {index}
+                {entry}
               </div>
             );
           if (isPlaceholder(entry)) return <span />;
-
-          const date = entry.postedAt.toDate();
 
           return (
             <div
@@ -129,7 +130,9 @@ const Month = ({ month }: { month: Month }) => {
               )}
             >
               <Link
-                href={`app/memories/view?d=${date.toLocaleDateString("en-US")}`}
+                href={`app/memories/view?d=${entry.postedAt
+                  .toDate()
+                  .toLocaleDateString("en-US")}`}
               >
                 <ReBealImageViewer
                   className=""
