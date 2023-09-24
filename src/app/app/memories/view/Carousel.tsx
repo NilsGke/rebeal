@@ -18,8 +18,6 @@ export default function RebealCarousel({
 }) {
   const swiperRef = useRef<SwiperType | null>(null);
 
-  console.log(startAt, reBeals.length);
-
   return (
     <section>
       <Swiper
