@@ -8,10 +8,24 @@ export default function ReBealImageViewer({
   images,
   className = "",
   children,
+  lazy = false,
+  disabled = false,
+  onImageDragStart,
+  onImageDragEnd,
+  envClassName,
+  selfieClassName,
+  padding,
 }: {
   images: ReBeal["images"];
   className?: string;
   children?: ReactNode;
+  lazy?: boolean;
+  disabled?: boolean;
+  onImageDragStart?: () => void;
+  onImageDragEnd?: () => void;
+  envClassName?: string;
+  selfieClassName?: string;
+  padding?: number;
 }) {
   const [environmentBig, setEnvironmentBig] = useState(true);
   const [dragging, setDragging] = useState(false);
@@ -20,6 +34,8 @@ export default function ReBealImageViewer({
   const bigImageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
+    if (disabled) return;
+
     const element = smallImageRef.current;
     if (element === null) return;
 
@@ -35,7 +51,10 @@ export default function ReBealImageViewer({
     element.addEventListener("touchstart", dragTouchStart);
 
     function dragTouchStart(e: TouchEvent) {
+      onImageDragStart && onImageDragStart();
       e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       // get the mouse cursor position at startup:
       pos3 = e.touches[0].clientX;
       pos4 = e.touches[0].clientY;
@@ -47,7 +66,10 @@ export default function ReBealImageViewer({
     }
 
     function dragMouseDown(e: MouseEvent) {
+      onImageDragStart && onImageDragStart();
       e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       // get the mouse cursor position at startup:
       pos3 = e.clientX;
       pos4 = e.clientY;
@@ -135,6 +157,8 @@ export default function ReBealImageViewer({
     }
 
     function closeDragElement() {
+      onImageDragEnd && onImageDragEnd();
+
       // stop moving when mouse button is released:
       document.onmouseup = null;
       document.onmousemove = null;
@@ -199,23 +223,32 @@ export default function ReBealImageViewer({
       element.removeEventListener("mousedown", dragMouseDown);
       element.removeEventListener("touchstart", dragTouchStart);
     };
-  }, []);
+  }, [disabled, onImageDragEnd, onImageDragStart]);
 
   return (
     <div className={twMerge("relative aspect-[3/4]", className)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={bigImageRef}
-        className="rounded-2xl h-full"
+        className={twMerge("rounded-2xl h-full", envClassName)}
         src={environmentBig ? images.environment : images.selfie}
-        alt="environment image"
+        alt={environmentBig ? "environment Image" : "selfie image"}
+        loading={lazy ? "lazy" : "eager"}
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={smallImageRef}
-        className="rounded-xl absolute top-4 left-4 h-[30%] border-2 border-black"
+        className={twMerge(
+          "rounded-xl absolute top-4 left-4 h-[30%] border-2 border-black",
+          selfieClassName
+        )}
+        style={{
+          top: padding,
+          left: padding,
+        }}
         src={environmentBig ? images.selfie : images.environment}
-        alt="selfie"
+        alt={environmentBig ? "selfie image" : "environment Image"}
+        loading={lazy ? "lazy" : "eager"}
       />
       {children}
     </div>
