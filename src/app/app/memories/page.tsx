@@ -77,14 +77,16 @@ export default async function Memories() {
 }
 
 const Month = ({ month }: { month: Month }) => {
-  const date = new Date(month.year, month.month, 1); // 2009-11-10
+  const date = new Date(month.year, month.month, 1); // fist day of the month
   const monthName = date.toLocaleString("EN", { month: "long" });
   const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
-  const firstDayIndex = date.getDay() - 1;
+  const firstDayIndexSundayWeekStart = date.getDay() - 1; // week starts with sunday
+  const firstDayIndexMondayWeekStart =
+    firstDayIndexSundayWeekStart === -1 ? 6 : firstDayIndexSundayWeekStart; // week now starts on monday
 
   const entries: (ReBeal | number | { placeholder: true })[] = [
-    ...Array.from(Array(firstDayIndex)).map(() => ({
+    ...Array.from(Array(firstDayIndexMondayWeekStart)).map(() => ({
       placeholder: true as const,
     })),
 
