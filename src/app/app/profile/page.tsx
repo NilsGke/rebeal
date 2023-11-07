@@ -86,7 +86,7 @@ export default async function Page() {
             </Suspense>
             <div className="w-full flex justify-center items-center mt-5">
               <Link
-                href={"app/memories"}
+                href={"/app/memories"}
                 className="p-2 border-2 border-zinc-700 rounded-md"
               >
                 Show all Memories
