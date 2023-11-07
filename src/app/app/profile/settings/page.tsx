@@ -42,7 +42,7 @@ const Page = async () => {
         />
 
         <Block title="FEATURES">
-          <Link href={""}>Memories</Link>
+          <Link href={"/app/profile/settings/saveMemories"}>Memories</Link>
           <HR />
           <Link href={""}>Music</Link>
         </Block>

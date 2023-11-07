@@ -5,6 +5,7 @@ import { FirestoreAdapter, initFirestore } from "@next-auth/firebase-adapter";
 import { AuthOptions } from "next-auth";
 import { cert } from "firebase-admin/app";
 import getTags from "@/helpers/generateTags";
+import { defaultSettings, settingsConverter } from "@/app/types";
 
 const firestore = initFirestore({
   credential: cert({
@@ -45,6 +46,7 @@ export const authOptions: AuthOptions = {
             merge: true,
           }
         );
+
         firestore.doc(`savedReactions/${user.id}`).set({
           "👍": "",
           "😃": "",
@@ -52,6 +54,11 @@ export const authOptions: AuthOptions = {
           "😍": "",
           "😂": "",
         });
+
+        firestore
+          .doc(`settings/${user.id}`)
+          .withConverter(settingsConverter)
+          .set(defaultSettings);
       }
       return token;
     },

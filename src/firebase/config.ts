@@ -8,10 +8,13 @@ const adminConfig = {
     : undefined,
 };
 
+export const bucketId = "rebeal-1eac1.appspot.com";
+
 try {
   admin.initializeApp({
     credential: admin.credential.cert(adminConfig),
-    storageBucket: "rebeal-1eac1",
+    storageBucket: bucketId,
+    projectId: "rebeal-1eac1",
   });
 } catch (error) {
   /*

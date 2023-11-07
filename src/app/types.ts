@@ -119,3 +119,17 @@ export const savedReactionConverter: FirestoreDataConverter<SavedReaction> = {
   }),
 };
 // #endregion
+
+//#region settings
+export type Settings = {
+  saveMemories: boolean;
+};
+export const defaultSettings = {
+  saveMemories: true,
+} as const;
+
+export const settingsConverter: FirestoreDataConverter<Settings> = {
+  toFirestore: (data: Settings) => data,
+  fromFirestore: (data: QueryDocumentSnapshot<Settings>) => data.data(),
+};
+//#endregion
