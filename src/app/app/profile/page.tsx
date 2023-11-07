@@ -9,38 +9,11 @@ import BackButton from "@/components/BackButton";
 import admin from "@/firebase/config";
 import { rebealConverter } from "@/app/types";
 import ReBealImageViewer from "@/components/RebealImageViewer";
+import { User } from "next-auth";
+import { Suspense } from "react";
 
 export default async function Page() {
   const session = await serverAuth();
-
-  const now = Date.now();
-  const twoWeeksAgo = new Date();
-  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-  twoWeeksAgo.setHours(0, 0, 0, 0);
-
-  const firestore = admin.firestore();
-  const userDoc = firestore.doc(`users/${session.user.id}`);
-  const memories = await firestore
-    .collection("rebeals")
-    .withConverter(rebealConverter)
-    .where("user", "==", userDoc)
-    .where(
-      "postedAt",
-      ">=",
-      new admin.firestore.Timestamp(Math.round(twoWeeksAgo.getSeconds()), 0)
-    )
-    .orderBy("postedAt", "desc")
-    .limit(14)
-    .get()
-    .then((snapshot) =>
-      snapshot.docs.map((doc) => ({
-        ...doc.data(),
-        daysAgo: Math.floor(
-          Math.abs(now - doc.data().postedAt.seconds * 1000) /
-            (1000 * 60 * 60 * 24)
-        ),
-      }))
-    );
 
   return (
     <>
@@ -97,49 +70,20 @@ export default async function Page() {
           </header>
           <section className="p-5 rounded-xl bg-zinc-900 ">
             The last 14 days
-            <div className="mt-3 grid grid-cols-7 gap-2">
-              {Array.from(new Array(14)).map((a, index) => {
-                const rebeal = memories.find(
-                  (memory) => memory.daysAgo === 13 - index
-                );
-
-                const date = new Date();
-                date.setDate(date.getDate() - (13 - index));
-
-                const border =
-                  rebeal !== undefined &&
-                  (rebeal.late === undefined || rebeal.late === false);
-
-                return (
-                  <div
-                    key={index}
-                    className={
-                      "aspect-[3/4] w-full rounded-md overflow-hidden bg-zinc-800 flex justify-center items-center " +
-                      (border ? " border" : "")
-                    }
-                  >
-                    {rebeal === undefined ? null : (
-                      <Link
-                        href={`app/memories/view?d=${date.toLocaleDateString(
-                          "en-US"
-                        )}`}
-                      >
-                        <ReBealImageViewer
-                          images={rebeal.images}
-                          disabled
-                          selfieClassName="border rounded"
-                          envClassName="rounded-none"
-                          padding={3}
-                        />
-                      </Link>
-                    )}
-                    <div className="absolute pointer-events-none">
-                      {date.toLocaleDateString("de-DE").split(".").at(0)}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <Suspense
+              fallback={
+                <div className="mt-3 grid grid-cols-7 gap-2">
+                  {Array.from(Array(14)).map((a, index) => (
+                    <div
+                      key={index}
+                      className="aspect-[3/4] w-full rounded-md bg-zinc-800 animate-pulse"
+                    ></div>
+                  ))}
+                </div>
+              }
+            >
+              <Memories userId={session.user.id} />
+            </Suspense>
             <div className="w-full flex justify-center items-center mt-5">
               <Link
                 href={"app/memories"}
@@ -152,5 +96,79 @@ export default async function Page() {
         </section>
       </main>
     </>
+  );
+}
+
+async function Memories({ userId }: { userId: User["id"] }) {
+  const now = Date.now();
+  const firestore = admin.firestore();
+  const userDoc = firestore.doc(`users/${userId}`);
+
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  twoWeeksAgo.setHours(0, 0, 0, 0);
+
+  const memories = await firestore
+    .collection("rebeals")
+    .withConverter(rebealConverter)
+    .where("user", "==", userDoc)
+    .where(
+      "postedAt",
+      ">=",
+      new admin.firestore.Timestamp(Math.round(twoWeeksAgo.getSeconds()), 0)
+    )
+    .orderBy("postedAt", "desc")
+    .limit(14)
+    .get()
+    .then((snapshot) =>
+      snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        daysAgo: Math.floor(
+          Math.abs(now - doc.data().postedAt.seconds * 1000) /
+            (1000 * 60 * 60 * 24)
+        ),
+      }))
+    );
+
+  return (
+    <div className="mt-3 grid grid-cols-7 gap-2">
+      {Array.from(new Array(14)).map((a, index) => {
+        const rebeal = memories.find((memory) => memory.daysAgo === 13 - index);
+
+        const date = new Date();
+        date.setDate(date.getDate() - (13 - index));
+
+        const border =
+          rebeal !== undefined &&
+          (rebeal.late === undefined || rebeal.late === false);
+
+        return (
+          <div
+            key={index}
+            className={
+              "aspect-[3/4] w-full rounded-md overflow-hidden bg-zinc-800 flex justify-center items-center " +
+              (border ? " border" : "")
+            }
+          >
+            {rebeal === undefined ? null : (
+              <Link
+                href={`app/memories/view?d=${date.toLocaleDateString("en-US")}`}
+              >
+                <ReBealImageViewer
+                  images={rebeal.images}
+                  disabled
+                  selfieClassName="border rounded"
+                  envClassName="rounded-none"
+                  padding={3}
+                />
+              </Link>
+            )}
+            <div className="absolute pointer-events-none">
+              {date.toLocaleDateString("de-DE").split(".").at(0)}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
