@@ -18,7 +18,7 @@ import InstallPrompt from "./InstallPrompt";
 import admin from "@/firebase/config";
 import { Timestamp } from "firebase-admin/firestore";
 import {
-  ReBeal,
+  type ReBeal,
   SavedReactionUserRecord,
   rebealConverter,
   savedReactionUserRecordConverter,
