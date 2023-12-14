@@ -7,6 +7,7 @@ export default async function getLastTTRB() {
     .firestore()
     .collection("timeToReBeal")
     .where("time", "<=", Timestamp.fromDate(new Date()))
+    .where("announced", "==", true)
     .orderBy("time", "desc")
     .limit(1)
     .withConverter(TTRBConverter)
