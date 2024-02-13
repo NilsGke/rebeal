@@ -1,6 +1,7 @@
 # ReBeal
 
-This is my webapp clone of the popular app [BeReal](https://bereal.com/).
+This is my webapp clone of the popular app [BeReal](https://bereal.com/).  
+Hosted on: [rebeal.vercel.app](https://rebeal.vercel.app)
 
 ## How are daily notifications sent?
 
